@@ -1,58 +1,49 @@
-import React from 'react';
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
-import './App.css';
+import { Navigate, Route, Routes, useLocation, Outlet } from 'react-router-dom';
+import { useAppSelector } from './application/hooks';
+import LoginPage from './presentation/authentication/login';
+import RegisterPage from './presentation/authentication/register';
+import { Layout } from './presentation/core/layout';
+import HomePage from './presentation/home';
+import SplashPage from './presentation/home/splash';
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-        </span>
-      </header>
-    </div>
-  );
+    return (
+        <Routes>
+            <Route element={<Layout />}>
+
+                <Route path="/" element={<SplashPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+
+                <Route element={<RequireAuth />} >
+                    <Route
+                        path="/home"
+                        element={
+                            <HomePage />
+                        }
+                    />
+                </Route>
+
+            </Route>
+        </Routes>
+    );
+}
+
+function RequireAuth() {
+    const user = useAppSelector((state) => state.auth.user)
+
+    let location = useLocation()
+
+    if (!user) {
+        // Redirect them to the /login page, but save the current location they were
+        // trying to go to when they were redirected. This allows us to send them
+        // along to that page after they login, which is a nicer user experience
+        // than dropping them off on the home page.
+        return <Navigate to="/login" state={{ from: location }} replace />;
+    }
+
+    return <Outlet />;
 }
 
 export default App;
+
